@@ -1,8 +1,9 @@
-NAME = philosophers
+NAME = philo
 CC = cc
 CFLAGS = -Wall -Werror -Wextra -g 
 HEADER = philosophers.h
-SRCS = philoshophers_main.c
+SRCS = philosophers_main.c\
+	   philosophers_utils.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
