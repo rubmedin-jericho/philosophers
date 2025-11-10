@@ -31,7 +31,7 @@ int	is_sign_dup(char c, int *flag)
 
 int	is_num(char c)
 {
-	if((c >= '0' || c == ('-' || '+')) || (c <= '9' || c == ('-' || '+')))
+	if(c >= '0' && c <= '9' || c == '-' || c == '+')
 		return (0);
 	return (1);
 }
@@ -69,6 +69,7 @@ static void *philo_thread(void *arg)
 
     philo = (t_philo *)arg;
     print_struct(*philo);
+	return (NULL);
 }
 static int    philosophers(int ac, char **av)
 {
@@ -88,6 +89,7 @@ static int    philosophers(int ac, char **av)
         //CREAR THREADS
         pthread_create(&thread, NULL, philo_thread, (void *)&philos[i]);
         i++;
+		usleep(500);
     }
     //HACE FALTA HACER FREE DE NUM_PHILO
     return (0);
