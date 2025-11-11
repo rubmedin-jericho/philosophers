@@ -18,6 +18,7 @@ typedef struct s_philo
     int     die_t;
     int     eat_t;
     int     sleep_t;
+	int		forev_d;
     /*OPCIONAL*/
     int     ucaneat_t;
 }   t_philo;

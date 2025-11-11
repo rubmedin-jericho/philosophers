@@ -13,6 +13,33 @@
 #include "philosophers.h"
 
 
+void	monitor_forev_d()
+{
+	 
+}
+
+void	monitoring_threads(t_philo **philos)
+{
+	while(monitor_forev_d(*philos))
+	{
+		init_bucle = 0;
+	}
+}
+
+static void	save_memory(t_philo **philos, int num_philo)
+{
+	int	i;
+
+	*philos = malloc(sizeof(**philos) * num_philo);
+	i = 0;
+	while(i < num_philo)
+	{
+		printf("hola\n");
+		philos[0][i].forev_d = 0;
+		i++;
+	}
+}
+
 static int ft_limits(int nbr)
 {
     if(nbr > INT_MAX || nbr < INT_MIN)
@@ -31,7 +58,7 @@ int	is_sign_dup(char c, int *flag)
 
 int	is_num(char c)
 {
-	if((c >= '0' || c == ('-' || '+')) || (c <= '9' || c == ('-' || '+')))
+	if(c >= '0' && c <= '9' || c == '-' || c == '+')
 		return (0);
 	return (1);
 }
@@ -55,22 +82,24 @@ t_philo init_philo(int ac, char **av, int num_philo)
     philo.eat_t = num_eat;
     philo.sleep_t = num_sleep; 
     philo.ucaneat_t = num_ucaneat;
+	philo.forev_d = 0;
     return (philo);
 }
 
 static void print_struct(t_philo philo)
 {
-    printf("\n[philo_%d]\n\t[die_philo] : %i\n\t[eat_t] : %i\n\t[sleep_t] : %i\n\t[ucaneat_t] : %i\n", philo.philo_n, philo.die_t, philo.eat_t, philo.sleep_t, philo.ucaneat_t);
+    printf("\n[philo_%d]\n\t[die_philo] : %i\n\t[eat_t] : %i\n\t[sleep_t] : %i\n\t[ucaneat_t] : %i\n\t[forev_d] : %i\n", philo.philo_n, philo.die_t, philo.eat_t, philo.sleep_t, philo.ucaneat_t, philo.forev_d);
 }
 
-static void *philo_thread(void *arg)
-{
+static void *philo_thread(void *arg) {
     t_philo *philo;
 
     philo = (t_philo *)arg;
     print_struct(*philo);
+	return (NULL);
 }
-static int    philosophers(int ac, char **av)
+
+static int    philosophers(int ac, char **av, int *init_bucle)
 {
     int i;
     int num_philo;
@@ -88,7 +117,9 @@ static int    philosophers(int ac, char **av)
         //CREAR THREADS
         pthread_create(&thread, NULL, philo_thread, (void *)&philos[i]);
         i++;
+		usleep(500);
     }
+	monitoring_threads(&philos);
     //HACE FALTA HACER FREE DE NUM_PHILO
     return (0);
 }
@@ -125,6 +156,9 @@ int	check_errors(char **av)
 
 int main(int ac, char **av)
 {
+	int init_bucle;
+
+	init_bucle = 1;
 	if(ac < 5 || ac > 6)
 	{
 		printf("ERROR ARGUMENTS\n");
@@ -132,7 +166,7 @@ int main(int ac, char **av)
 	}
 	if(check_errors(av))
 		return (1);
-    if(philosophers(ac, av))
+    if(philosophers(ac, av, &init_bucle))
         return (1);
 	printf("FUNCIONA\n");
 	return (0);
