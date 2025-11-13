@@ -6,6 +6,7 @@
 # include <pthread.h>
 # include <stdio.h>
 # include <limits.h>
+# include <sys/time.h>
 
 # define ERROR 1
 # define SUCCESS 0
@@ -19,6 +20,7 @@ typedef struct s_philo
     int     eat_t;
     int     sleep_t;
 	int		forev_d;
+	pthread_mutex_t	mutex;
     /*OPCIONAL*/
     int     ucaneat_t;
 }   t_philo;

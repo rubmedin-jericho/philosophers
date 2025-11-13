@@ -12,19 +12,41 @@
 
 #include "philosophers.h"
 
-
-void	monitor_forev_d()
+static void	rutine(t_philo *philos)
 {
-	 
+	struct timeval time;
+
+	gettimeofday(&time, NULL);
+	printf("[philo_%i]\n\tmicroseconds : %li\n\tseconds : %li\n", philos->philo_n, time.tv_usec, time.tv_sec);
 }
 
-void	monitoring_threads(t_philo **philos)
+static int	monitoring_forev_d(t_philo **philos, int num_philo)
 {
-	while(monitor_forev_d(*philos))
+	int	i;
+
+	i = 0;
+	while(i < num_philo)
 	{
-		init_bucle = 0;
+		pthread_mutex_lock(&(*philos)[i].mutex);
+		if((*philos)[i].forev_d == 1)
+			return (1);
+		pthread_mutex_unlock(&(*philos)[i].mutex);
+		i++;
 	}
+	return (0);
 }
+
+//static void	make_rutine(t_philo **philos, int num_philo)
+//{
+//	int	monitor;
+//
+//	monitor = monitoring_forev_d(*philos, num_philo);
+//	while(!monitor)
+//	{
+//		rutine(*philos);
+//		monitor = monitoring_forev_d(*philos, num_philo);
+//	}
+//}
 
 static void	save_memory(t_philo **philos, int num_philo)
 {
@@ -92,10 +114,21 @@ static void print_struct(t_philo philo)
 }
 
 static void *philo_thread(void *arg) {
-    t_philo *philo;
 
+    t_philo *philo;
+	int	i;
+
+	i = 0;
     philo = (t_philo *)arg;
-    print_struct(*philo);
+//    print_struct(*philo);
+	while(!philo->forev_d)
+	{
+		if(i > 99)
+			philo->forev_d = 1;
+		rutine(philo);
+		usleep(500);
+	}
+	//make_rutine(&philos, num_philo);
 	return (NULL);
 }
 
@@ -103,6 +136,7 @@ static int    philosophers(int ac, char **av, int *init_bucle)
 {
     int i;
     int num_philo;
+	int	monitor;
     t_philo *philos;
     pthread_t thread;
 
@@ -119,7 +153,8 @@ static int    philosophers(int ac, char **av, int *init_bucle)
         i++;
 		usleep(500);
     }
-	monitoring_threads(&philos);
+	while(!monitor)
+		monitor = monitoring_forev_d(&philos, num_philo);
     //HACE FALTA HACER FREE DE NUM_PHILO
     return (0);
 }
