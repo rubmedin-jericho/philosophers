@@ -11,13 +11,20 @@
 /* ************************************************************************** */
 
 #include "philosophers.h"
+long get_time_ms(void)
+{
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    return (time.tv_sec * 1000) + (time.tv_usec / 1000);
+}
 
 static void	rutine(t_philo *philos)
 {
-	struct timeval time;
+	int	philo_before;
 
-	gettimeofday(&time, NULL);
-	printf("[philo_%i]\n\tmicroseconds : %li\n\tseconds : %li\n", philos->philo_n, time.tv_usec, time.tv_sec);
+	philo_before = philos->philo_n - 1;
+	printf("[%ld] [philo_%d] exist\n", get_time_ms() - philos->global_t, philos->philo_n);
+	usleep(500);
 }
 
 static int	monitoring_forev_d(t_philo **philos, int num_philo)
@@ -105,6 +112,7 @@ t_philo init_philo(int ac, char **av, int num_philo)
     philo.sleep_t = num_sleep; 
     philo.ucaneat_t = num_ucaneat;
 	philo.forev_d = 0;
+	philo.global_t = get_time_ms();
     return (philo);
 }
 
@@ -126,6 +134,7 @@ static void *philo_thread(void *arg) {
 		if(i > 99)
 			philo->forev_d = 1;
 		rutine(philo);
+		//i++;
 		usleep(500);
 	}
 	//make_rutine(&philos, num_philo);

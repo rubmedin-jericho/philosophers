@@ -20,6 +20,8 @@ typedef struct s_philo
     int     eat_t;
     int     sleep_t;
 	int		forev_d;
+	int		fork;
+	long	global_t;
 	pthread_mutex_t	mutex;
     /*OPCIONAL*/
     int     ucaneat_t;
