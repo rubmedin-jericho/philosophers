@@ -15,12 +15,13 @@ long ft_atoi(char *str);
 
 typedef struct s_philo
 {
-    int     philo_n;
-    int     die_t;
-    int     eat_t;
-    int     sleep_t;
+    int		philo_n;
+    int		die_t;
+    int		eat_t;
+    int		sleep_t;
 	int		forev_d;
 	int		fork;
+	int		num_philos;
 	long	global_t;
 	pthread_mutex_t	mutex;
     /*OPCIONAL*/
