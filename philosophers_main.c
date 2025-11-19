@@ -18,11 +18,64 @@ long get_time_ms(void)
     return (time.tv_sec * 1000) + (time.tv_usec / 1000);
 }
 
+static int	look_forks(t_philo *philos)
+{
+	int	philo_n;
+	int	philo_l;
+
+
+	pthread_mutex_lock(&philos->mutex);
+	if((philos->philo_n - 1) == 0)
+	{
+		philo_l = philos[philos->num_philos].fork;
+		if(!philos->fork && !philo_l)
+		{
+			pthread_mutex_unlock(&philos->mutex);
+			return (philos->num_philos);
+		}
+	}
+	philo_n = philos->philo_n - 1;
+	philo_l = philos[philo_n - 1].fork;
+	if(!philos->fork && !philo_l)
+	{
+		pthread_mutex_unlock(&philos->mutex);
+		return (1);
+	}
+	pthread_mutex_unlock(&philos->mutex);
+	return (0);
+}
+
 static void	rutine(t_philo *philos)
 {
 	int	philo_before;
+	int	is_active;
 
-	philo_before = philos->philo_n - 1;
+	is_active = look_forks(philos);
+	if(is_active == philos->num_philos)
+	{
+		pthread_mutex_lock(&philos->mutex);
+		philos->fork = 1;	
+		philos[philos->num_philos].fork = 1;
+		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
+		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
+		usleep(philos->eat_t);
+		philos->fork = 0;	
+		philos[philos->num_philos].fork = 0;
+		pthread_mutex_unlock(&philos->mutex);
+	}
+	else if(is_active)
+	{
+		pthread_mutex_lock(&philos->mutex);
+		philos->fork = 1;	
+		philos[philos->num_philos].fork = 1;
+		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
+		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
+		usleep(philos->eat_t);
+		philos->fork = 0;	
+		philos[philos->num_philos].fork = 0;
+		pthread_mutex_unlock(&philos->mutex);
+	}
+		
 	printf("[%ld] [philo_%d] exist\n", get_time_ms() - philos->global_t, philos->philo_n);
 	usleep(500);
 }
@@ -63,7 +116,6 @@ static void	save_memory(t_philo **philos, int num_philo)
 	i = 0;
 	while(i < num_philo)
 	{
-		printf("hola\n");
 		philos[0][i].forev_d = 0;
 		i++;
 	}
@@ -99,10 +151,12 @@ t_philo init_philo(int ac, char **av, int num_philo)
     int num_eat;
     int num_sleep;
     int num_ucaneat;
+	int	num_philos;
 
     num_die = ft_atoi(av[2]);
     num_eat = ft_atoi(av[3]);
     num_sleep = ft_atoi(av[4]);
+	num_philos = ft_atoi(av[1]);
     num_ucaneat = 0;
     if(ac == 6)
         num_ucaneat = ft_atoi(av[5]);
@@ -113,6 +167,8 @@ t_philo init_philo(int ac, char **av, int num_philo)
     philo.ucaneat_t = num_ucaneat;
 	philo.forev_d = 0;
 	philo.global_t = get_time_ms();
+	philo.fork = 0;
+	philo.num_philos = num_philos;
     return (philo);
 }
 
@@ -129,13 +185,14 @@ static void *philo_thread(void *arg) {
 	i = 0;
     philo = (t_philo *)arg;
 //    print_struct(*philo);
+	//while(i < 10)
 	while(!philo->forev_d)
 	{
-		if(i > 99)
-			philo->forev_d = 1;
+//		if(i > 99)
+//			philo->forev_d = 1;
 		rutine(philo);
-		//i++;
 		usleep(500);
+		//i++;
 	}
 	//make_rutine(&philos, num_philo);
 	return (NULL);
