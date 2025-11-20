@@ -51,6 +51,7 @@ static void	rutine(t_philo *philos)
 	int	is_active;
 
 	is_active = look_forks(philos);
+	printf("\t[look_forks] : %i\n\t[num_philos] : %i\n", is_active, philos->num_philos);
 	if(is_active == philos->num_philos)
 	{
 		pthread_mutex_lock(&philos->mutex);
@@ -58,7 +59,8 @@ static void	rutine(t_philo *philos)
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
 		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
-		usleep(philos->eat_t);
+		//usleep(philos->eat_t);
+		usleep(600000000);
 		philos->fork = 0;	
 		philos[philos->num_philos].fork = 0;
 		pthread_mutex_unlock(&philos->mutex);
@@ -70,7 +72,8 @@ static void	rutine(t_philo *philos)
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
 		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
-		usleep(philos->eat_t);
+		//usleep(philos->eat_t);
+		usleep(600000000);
 		philos->fork = 0;	
 		philos[philos->num_philos].fork = 0;
 		pthread_mutex_unlock(&philos->mutex);
@@ -144,7 +147,7 @@ int	is_num(char c)
 	return (1);
 }
 
-t_philo init_philo(int ac, char **av, int num_philo)
+t_philo init_philo(int ac, char **av, int num_philo, pthread_mutex_t *mutex)
 {
     t_philo philo;
     int num_die;
@@ -198,7 +201,8 @@ static void *philo_thread(void *arg) {
 	return (NULL);
 }
 
-static int    philosophers(int ac, char **av, int *init_bucle)
+static int    philosophers(int ac, char **av, int *init_bucle, 
+	pthread_mutex_t *mutex)
 {
     int i;
     int num_philo;
@@ -213,7 +217,7 @@ static int    philosophers(int ac, char **av, int *init_bucle)
     philos = malloc(sizeof(t_philo) * num_philo);
     while(i < num_philo)
     {
-        philos[i] = init_philo(ac, av, i);
+        philos[i] = init_philo(ac, av, i, mutex);
         //CREAR THREADS
         pthread_create(&thread, NULL, philo_thread, (void *)&philos[i]);
         i++;
@@ -258,6 +262,7 @@ int	check_errors(char **av)
 int main(int ac, char **av)
 {
 	int init_bucle;
+	pthread_mutex_t	mutex;
 
 	init_bucle = 1;
 	if(ac < 5 || ac > 6)
@@ -267,7 +272,7 @@ int main(int ac, char **av)
 	}
 	if(check_errors(av))
 		return (1);
-    if(philosophers(ac, av, &init_bucle))
+    if(philosophers(ac, av, &init_bucle), &mutex)
         return (1);
 	printf("FUNCIONA\n");
 	return (0);
