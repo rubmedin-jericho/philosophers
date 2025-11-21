@@ -24,13 +24,13 @@ static int	look_forks(t_philo *philos)
 	int	philo_l;
 
 
-	pthread_mutex_lock(&philos->mutex);
+	pthread_mutex_lock(philos->mutex);
 	if((philos->philo_n - 1) == 0)
 	{
 		philo_l = philos[philos->num_philos].fork;
 		if(!philos->fork && !philo_l)
 		{
-			pthread_mutex_unlock(&philos->mutex);
+			pthread_mutex_unlock(philos->mutex);
 			return (philos->num_philos);
 		}
 	}
@@ -38,10 +38,10 @@ static int	look_forks(t_philo *philos)
 	philo_l = philos[philo_n - 1].fork;
 	if(!philos->fork && !philo_l)
 	{
-		pthread_mutex_unlock(&philos->mutex);
+		pthread_mutex_unlock(philos->mutex);
 		return (1);
 	}
-	pthread_mutex_unlock(&philos->mutex);
+	pthread_mutex_unlock(philos->mutex);
 	return (0);
 }
 
@@ -51,36 +51,32 @@ static void	rutine(t_philo *philos)
 	int	is_active;
 
 	is_active = look_forks(philos);
-	printf("\t[look_forks] : %i\n\t[num_philos] : %i\n", is_active, philos->num_philos);
-	if(is_active == philos->num_philos)
+	//printf("\t[look_forks] : %i\n\t[num_philos] : %i\n", is_active, philos->num_philos);
+	if(is_active == philos->num_philos) 
 	{
-		pthread_mutex_lock(&philos->mutex);
+		pthread_mutex_lock(philos->mutex);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
 		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
-		//usleep(philos->eat_t);
-		usleep(600000000);
-		philos->fork = 0;	
+		usleep((philos->eat_t * 1000));
+		philos->fork = 0;
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(&philos->mutex);
+		pthread_mutex_unlock(philos->mutex);
 	}
 	else if(is_active)
 	{
-		pthread_mutex_lock(&philos->mutex);
+		pthread_mutex_lock(philos->mutex);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
 		printf("[%ld] [philo_%d] is eating\n", get_time_ms() - philos->global_t, philos->philo_n);
-		//usleep(philos->eat_t);
-		usleep(600000000);
+		usleep((philos->eat_t * 1000));
 		philos->fork = 0;	
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(&philos->mutex);
+		pthread_mutex_unlock(philos->mutex);
 	}
-		
-	printf("[%ld] [philo_%d] exist\n", get_time_ms() - philos->global_t, philos->philo_n);
-	usleep(500);
+	//usleep(500);
 }
 
 static int	monitoring_forev_d(t_philo **philos, int num_philo)
@@ -90,11 +86,12 @@ static int	monitoring_forev_d(t_philo **philos, int num_philo)
 	i = 0;
 	while(i < num_philo)
 	{
-		pthread_mutex_lock(&(*philos)[i].mutex);
+		pthread_mutex_lock(((*philos)[i]).mutex);	
 		if((*philos)[i].forev_d == 1)
 			return (1);
-		pthread_mutex_unlock(&(*philos)[i].mutex);
+		pthread_mutex_unlock((*philos)[i].mutex);
 		i++;
+		usleep(500);
 	}
 	return (0);
 }
@@ -172,6 +169,7 @@ t_philo init_philo(int ac, char **av, int num_philo, pthread_mutex_t *mutex)
 	philo.global_t = get_time_ms();
 	philo.fork = 0;
 	philo.num_philos = num_philos;
+	philo.mutex = mutex;
     return (philo);
 }
 
@@ -194,10 +192,16 @@ static void *philo_thread(void *arg) {
 //		if(i > 99)
 //			philo->forev_d = 1;
 		rutine(philo);
-		usleep(500);
+		usleep(100);
 		//i++;
 	}
 	//make_rutine(&philos, num_philo);
+	return (NULL);
+}
+
+static void	*print_hola(void *arg)
+{
+	printf("print_hola\n");
 	return (NULL);
 }
 
@@ -223,8 +227,12 @@ static int    philosophers(int ac, char **av, int *init_bucle,
         i++;
 		usleep(500);
     }
+	monitor = 0;
 	while(!monitor)
+	{
 		monitor = monitoring_forev_d(&philos, num_philo);
+		usleep(500);
+	}
     //HACE FALTA HACER FREE DE NUM_PHILO
     return (0);
 }
@@ -264,6 +272,7 @@ int main(int ac, char **av)
 	int init_bucle;
 	pthread_mutex_t	mutex;
 
+	pthread_mutex_init(&mutex, NULL);
 	init_bucle = 1;
 	if(ac < 5 || ac > 6)
 	{
@@ -272,7 +281,7 @@ int main(int ac, char **av)
 	}
 	if(check_errors(av))
 		return (1);
-    if(philosophers(ac, av, &init_bucle), &mutex)
+    if(philosophers(ac, av, &init_bucle, &mutex))
         return (1);
 	printf("FUNCIONA\n");
 	return (0);

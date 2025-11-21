@@ -29,4 +29,8 @@ typedef struct s_philo
     int     ucaneat_t;
 }   t_philo;
 
+typedef struct	s_mutexs
+{
+	
+}
 #endif
