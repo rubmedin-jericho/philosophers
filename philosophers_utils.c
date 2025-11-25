@@ -12,6 +12,16 @@
 
 #include "philosophers.h"
 
+int	ft_pthread_create(pthread_t *thread, void *philos)
+{
+	if(pthread_create(thread, NULL, philo_thread, philos) != 0)
+	{
+		perror("ERROR_CREATE_THREAD\n");
+		return (ERROR);
+	}
+	return (SUCCESS);
+}
+
 long ft_atoi(char *str)
 {
     int sign;

@@ -24,13 +24,13 @@ static int	look_forks(t_philo *philos)
 	int	philo_l;
 
 
-	pthread_mutex_lock(philos->mutex);
+	pthread_mutex_lock(philos->mutex_l->mutex_fork);
 	if((philos->philo_n - 1) == 0)
 	{
 		philo_l = philos[philos->num_philos].fork;
 		if(!philos->fork && !philo_l)
 		{
-			pthread_mutex_unlock(philos->mutex);
+			pthread_mutex_unlock(philos->mutex_l->mutex_fork);
 			return (philos->num_philos);
 		}
 	}
@@ -38,11 +38,11 @@ static int	look_forks(t_philo *philos)
 	philo_l = philos[philo_n - 1].fork;
 	if(!philos->fork && !philo_l)
 	{
-		pthread_mutex_unlock(philos->mutex);
-		return (1);
+		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+		return (ERROR);
 	}
-	pthread_mutex_unlock(philos->mutex);
-	return (0);
+	pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+	return (SUCCESS);
 }
 
 static void	rutine(t_philo *philos)
@@ -54,7 +54,7 @@ static void	rutine(t_philo *philos)
 	//printf("\t[look_forks] : %i\n\t[num_philos] : %i\n", is_active, philos->num_philos);
 	if(is_active == philos->num_philos) 
 	{
-		pthread_mutex_lock(philos->mutex);
+		pthread_mutex_lock(philos->mutex_l->mutex_fork);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
@@ -62,11 +62,11 @@ static void	rutine(t_philo *philos)
 		usleep((philos->eat_t * 1000));
 		philos->fork = 0;
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(philos->mutex);
+		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
 	}
 	else if(is_active)
 	{
-		pthread_mutex_lock(philos->mutex);
+		pthread_mutex_lock(philos->mutex_l->mutex_fork);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
@@ -74,7 +74,7 @@ static void	rutine(t_philo *philos)
 		usleep((philos->eat_t * 1000));
 		philos->fork = 0;	
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(philos->mutex);
+		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
 	}
 	//usleep(500);
 }
@@ -86,10 +86,10 @@ static int	monitoring_forev_d(t_philo **philos, int num_philo)
 	i = 0;
 	while(i < num_philo)
 	{
-		pthread_mutex_lock(((*philos)[i]).mutex);	
+		pthread_mutex_lock(((*philos)[i]).mutex_l->mutex_fork);	
 		if((*philos)[i].forev_d == 1)
 			return (1);
-		pthread_mutex_unlock((*philos)[i].mutex);
+		pthread_mutex_unlock((*philos)[i].mutex_l->mutex_fork);
 		i++;
 		usleep(500);
 	}
@@ -144,7 +144,7 @@ int	is_num(char c)
 	return (1);
 }
 
-t_philo init_philo(int ac, char **av, int num_philo, pthread_mutex_t *mutex)
+t_philo init_philo(int ac, char **av, int num_philo, t_mutex *mutex)
 {
     t_philo philo;
     int num_die;
@@ -169,7 +169,7 @@ t_philo init_philo(int ac, char **av, int num_philo, pthread_mutex_t *mutex)
 	philo.global_t = get_time_ms();
 	philo.fork = 0;
 	philo.num_philos = num_philos;
-	philo.mutex = mutex;
+	philo.mutex_l = mutex;
     return (philo);
 }
 
@@ -178,7 +178,7 @@ static void print_struct(t_philo philo)
     printf("\n[philo_%d]\n\t[die_philo] : %i\n\t[eat_t] : %i\n\t[sleep_t] : %i\n\t[ucaneat_t] : %i\n\t[forev_d] : %i\n", philo.philo_n, philo.die_t, philo.eat_t, philo.sleep_t, philo.ucaneat_t, philo.forev_d);
 }
 
-static void *philo_thread(void *arg) {
+void *philo_thread(void *arg) {
 
     t_philo *philo;
 	int	i;
@@ -199,14 +199,8 @@ static void *philo_thread(void *arg) {
 	return (NULL);
 }
 
-static void	*print_hola(void *arg)
-{
-	printf("print_hola\n");
-	return (NULL);
-}
-
 static int    philosophers(int ac, char **av, int *init_bucle, 
-	pthread_mutex_t *mutex)
+	t_mutex *mutex)
 {
     int i;
     int num_philo;
@@ -217,13 +211,14 @@ static int    philosophers(int ac, char **av, int *init_bucle,
     i = 0;
     num_philo = ft_atoi(av[1]);
     if(ft_limits(num_philo))
-        return (1);
+        return (ERROR);
     philos = malloc(sizeof(t_philo) * num_philo);
     while(i < num_philo)
     {
         philos[i] = init_philo(ac, av, i, mutex);
         //CREAR THREADS
-        pthread_create(&thread, NULL, philo_thread, (void *)&philos[i]);
+		if(ft_pthread_create(&thread, (void *)&philos[i]))
+			return (ERROR);
         i++;
 		usleep(500);
     }
@@ -234,7 +229,7 @@ static int    philosophers(int ac, char **av, int *init_bucle,
 		usleep(500);
 	}
     //HACE FALTA HACER FREE DE NUM_PHILO
-    return (0);
+    return (SUCCESS);
 }
 
 int	check_errors(char **av)
@@ -270,9 +265,10 @@ int	check_errors(char **av)
 int main(int ac, char **av)
 {
 	int init_bucle;
-	pthread_mutex_t	mutex;
+	t_mutex	mutex;
 
-	pthread_mutex_init(&mutex, NULL);
+	pthread_mutex_init(mutex.mutex_die, NULL);
+	pthread_mutex_init(mutex.mutex_fork, NULL);
 	init_bucle = 1;
 	if(ac < 5 || ac > 6)
 	{
