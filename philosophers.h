@@ -18,8 +18,8 @@ void	*philo_thread(void *arg);
 
 typedef struct s_mutex
 {
-	pthread_mutex_t	*mutex_die;
-	pthread_mutex_t	*mutex_fork;
+	pthread_mutex_t	mutex_die;
+	pthread_mutex_t	mutex_fork;
 }	t_mutex;
 
 typedef struct s_philo

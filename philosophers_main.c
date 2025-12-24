@@ -24,13 +24,13 @@ static int	look_forks(t_philo *philos)
 	int	philo_l;
 
 
-	pthread_mutex_lock(philos->mutex_l->mutex_fork);
+	pthread_mutex_lock(&philos->mutex_l->mutex_fork);
 	if((philos->philo_n - 1) == 0)
 	{
 		philo_l = philos[philos->num_philos].fork;
 		if(!philos->fork && !philo_l)
 		{
-			pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+			pthread_mutex_unlock(&philos->mutex_l->mutex_fork);
 			return (philos->num_philos);
 		}
 	}
@@ -38,10 +38,10 @@ static int	look_forks(t_philo *philos)
 	philo_l = philos[philo_n - 1].fork;
 	if(!philos->fork && !philo_l)
 	{
-		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+		pthread_mutex_unlock(&philos->mutex_l->mutex_fork);
 		return (ERROR);
 	}
-	pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+	pthread_mutex_unlock(&philos->mutex_l->mutex_fork);
 	return (SUCCESS);
 }
 
@@ -54,7 +54,7 @@ static void	rutine(t_philo *philos)
 	//printf("\t[look_forks] : %i\n\t[num_philos] : %i\n", is_active, philos->num_philos);
 	if(is_active == philos->num_philos) 
 	{
-		pthread_mutex_lock(philos->mutex_l->mutex_fork);
+		pthread_mutex_lock(&philos->mutex_l->mutex_fork);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
@@ -62,11 +62,11 @@ static void	rutine(t_philo *philos)
 		usleep((philos->eat_t * 1000));
 		philos->fork = 0;
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+		pthread_mutex_unlock(&philos->mutex_l->mutex_fork);
 	}
 	else if(is_active)
 	{
-		pthread_mutex_lock(philos->mutex_l->mutex_fork);
+		pthread_mutex_lock(&philos->mutex_l->mutex_fork);
 		philos->fork = 1;	
 		philos[philos->num_philos].fork = 1;
 		printf("[%ld] [philo_%d] has taken a fork\n", get_time_ms() - philos->global_t, philos->philo_n);
@@ -74,7 +74,7 @@ static void	rutine(t_philo *philos)
 		usleep((philos->eat_t * 1000));
 		philos->fork = 0;	
 		philos[philos->num_philos].fork = 0;
-		pthread_mutex_unlock(philos->mutex_l->mutex_fork);
+		pthread_mutex_unlock(&philos->mutex_l->mutex_fork);
 	}
 	//usleep(500);
 }
@@ -86,10 +86,10 @@ static int	monitoring_forev_d(t_philo **philos, int num_philo)
 	i = 0;
 	while(i < num_philo)
 	{
-		pthread_mutex_lock(((*philos)[i]).mutex_l->mutex_fork);	
+		pthread_mutex_lock(&((*philos)[i]).mutex_l->mutex_fork);	
 		if((*philos)[i].forev_d == 1)
 			return (1);
-		pthread_mutex_unlock((*philos)[i].mutex_l->mutex_fork);
+		pthread_mutex_unlock(&(*philos)[i].mutex_l->mutex_fork);
 		i++;
 		usleep(500);
 	}
@@ -267,8 +267,8 @@ int main(int ac, char **av)
 	int init_bucle;
 	t_mutex	mutex;
 
-	pthread_mutex_init(mutex.mutex_die, NULL);
-	pthread_mutex_init(mutex.mutex_fork, NULL);
+	pthread_mutex_init(&mutex.mutex_fork, NULL);
+	pthread_mutex_init(&mutex.mutex_die, NULL);
 	init_bucle = 1;
 	if(ac < 5 || ac > 6)
 	{
@@ -279,6 +279,5 @@ int main(int ac, char **av)
 		return (1);
     if(philosophers(ac, av, &init_bucle, &mutex))
         return (1);
-	printf("FUNCIONA\n");
 	return (0);
 }
