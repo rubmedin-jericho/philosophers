@@ -160,14 +160,12 @@ t_philo init_philo(int ac, char **av, int num_philo, t_mutex *mutex)
     num_ucaneat = 0;
     if(ac == 6)
         num_ucaneat = ft_atoi(av[5]);
-    philo.philo_n = num_philo + 1;
-    philo.die_t = num_die;
-    philo.eat_t = num_eat;
-    philo.sleep_t = num_sleep; 
+    philo.philo_n = ft_atoi(av[1]) + 1;
+    philo.die_t = ft_atoi(av[2]);
+    philo.eat_t = ft_atoi(av[3]);
+    philo.sleep_t = ft_atoi(av[4]; 
     philo.ucaneat_t = num_ucaneat;
-	philo.forev_d = 0;
 	philo.global_t = get_time_ms();
-	philo.fork = 0;
 	philo.num_philos = num_philos;
 	philo.mutex_l = mutex;
     return (philo);
@@ -183,7 +181,7 @@ void *philo_thread(void *arg) {
     t_philo *philo;
 	int	i;
 
-	i = 0;
+	i = 0
     philo = (t_philo *)arg;
 //    print_struct(*philo);
 	//while(i < 10)
@@ -199,29 +197,26 @@ void *philo_thread(void *arg) {
 	return (NULL);
 }
 
-static int    philosophers(int ac, char **av, int *init_bucle, 
-	t_mutex *mutex)
+static int    philosophers(int ac, char **av, t_mutex *mutex, t_philo *philos)
 {
-    int i;
-    int num_philo;
+	int i;
+	int num_philo;
 	int	monitor;
-    t_philo *philos;
-    pthread_t thread;
+	pthread_t thread;
 
-    i = 0;
-    num_philo = ft_atoi(av[1]);
-    if(ft_limits(num_philo))
-        return (ERROR);
-    philos = malloc(sizeof(t_philo) * num_philo);
-    while(i < num_philo)
-    {
-        philos[i] = init_philo(ac, av, i, mutex);
-        //CREAR THREADS
+	i = 0;
+	num_philo = ft_atoi(av[1]);
+	if(ft_limits(num_philo))
+		return (ERROR);
+	while(i < num_philo)
+	{
+		philos[i] = init_philo(ac, av, i, mutex);
+		//CREAR THREADS
 		if(ft_pthread_create(&thread, (void *)&philos[i]))
-			return (ERROR);
-        i++;
+		return (ERROR);
+		i++;
 		usleep(500);
-    }
+	}
 	monitor = 0;
 	while(!monitor)
 	{
@@ -264,12 +259,10 @@ int	check_errors(char **av)
 
 int main(int ac, char **av)
 {
-	int init_bucle;
-	t_mutex	mutex;
+	t_mutex	*mutx;
+	t_philo *philos;
+	int	num_philos;
 
-	pthread_mutex_init(&mutex.mutex_fork, NULL);
-	pthread_mutex_init(&mutex.mutex_die, NULL);
-	init_bucle = 1;
 	if(ac < 5 || ac > 6)
 	{
 		printf("ERROR ARGUMENTS\n");
@@ -277,7 +270,9 @@ int main(int ac, char **av)
 	}
 	if(check_errors(av))
 		return (1);
-    if(philosophers(ac, av, &init_bucle, &mutex))
-        return (1);
+	num_philos = ft_atoi(av[1]);
+	philos = malloc(sizeof(t_philos) * num_philos);
+	if(philosophers(ac, av, &mutex, philos))
+		return (1);
 	return (0);
 }
